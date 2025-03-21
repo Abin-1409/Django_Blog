@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load blog_filters %}
+
+{% block title %}{{ blogpost.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <article class="blog-post">
+                <h1 class="display-4 mb-3">{{ blogpost.title }}</h1>
+                
+                <div class="mb-3 text-muted">
+                    <small>
+                        By <a href="{% url 'blog:blogger-detail' blogpost.author.pk %}">{{ blogpost.author }}</a>
+                        | {{ blogpost.post_date|date:"F j, Y" }}
+                        | {{ blogpost.get_word_count|intcomma }} words
+                        | {{ blogpost.get_reading_time }} min read
+                    </small>
+                </div>
+
+                <!-- Reaction Buttons -->
+                {% if user.is_authenticated %}
+                <div class="reaction-buttons mb-4">
+                    <button class="btn btn-outline-primary me-2" id="likeButton" data-reaction="like">
+                        <i class="fas fa-thumbs-up"></i>
+                        <span id="likeCount">0</span>
+                    </button>
+                    <button class="btn btn-outline-danger" id="dislikeButton" data-reaction="dislike">
+                        <i class="fas fa-thumbs-down"></i>
+                        <span id="dislikeCount">0</span>
+                    </button>
+                </div>
+                {% endif %}
+
+                <!-- Audio Player Section -->
+                <div class="card mb-4" id="audioSection">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-headphones text-primary me-2"></i>Listen to Article
+                        </h5>
+                        {% if blogpost.audio_file %}
+                            <div class="audio-player">
+                                <audio id="blogAudio" class="w-100 mb-3" controls>
+                                    <source src="{{ blogpost.audio_file.url }}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                                <div class="d-flex align-items-center">
+                                    <label for="playbackSpeed" class="me-2">Playback Speed:</label>
+                                    <select id="playbackSpeed" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="0.75">0.75x</option>
+                                        <option value="1.0" selected>1.0x</option>
+                                        <option value="1.25">1.25x</option>
+                                        <option value="1.5">1.5x</option>
+                                        <option value="2.0">2.0x</option>
+                                    </select>
+                                    <span class="ms-3 text-muted">
+                                        <i class="fas fa-clock me-1"></i>Estimated duration: {{ blogpost.get_audio_duration }} min
+                                    </span>
+                                    <a href="{{ blogpost.audio_file.url }}" download class="btn btn-sm btn-outline-primary ms-3">
+                                        <i class="fas fa-download me-1"></i>Download MP3
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <button id="generateAudio" class="btn btn-primary">
+                                <i class="fas fa-microphone me-2"></i>Generate Audio
+                            </button>
+                            <div id="audioGenerationStatus" class="mt-2" style="display: none;">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span class="ms-2">Generating audio...</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="blog-content">
+                    {{ blogpost.content|linebreaks }}
+                </div>
+            </article>
+
+            {% if user.is_authenticated %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Add a Comment</h5>
+                    <form method="POST" action="{% url 'blog:create-comment' blogpost.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="comment" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Comments Section -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Comments</h5>
+                    {% with comments=blogpost.comments.all %}
+                        {% if comments %}
+                            {% for comment in comments %}
+                            <div class="comment {% if not forloop.last %}border-bottom mb-3 pb-3{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <p class="mb-1">{{ comment.text }}</p>
+                                        <small class="text-muted">
+                                            By {{ comment.author }} on {{ comment.post_date|date:"F j, Y" }}
+                                            {% if comment.is_edited %}
+                                            (edited on {{ comment.updated_at|date:"F j, Y" }})
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% if user.is_authenticated %}
+                                        {% if user == comment.author or user.is_staff %}
+                                        <div class="btn-group ms-3">
+                                            <a href="{% url 'blog:edit-comment' comment.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'blog:delete-comment' comment.pk %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No comments yet. Be the first to comment!</p>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Playback speed control
+    const audio = document.getElementById('blogAudio');
+    const speedControl = document.getElementById('playbackSpeed');
+    
+    if (audio && speedControl) {
+        speedControl.addEventListener('change', function() {
+            audio.playbackRate = parseFloat(this.value);
+        });
+    }
+
+    // Audio generation
+    const generateButton = document.getElementById('generateAudio');
+    const statusDiv = document.getElementById('audioGenerationStatus');
+    
+    if (generateButton) {
+        generateButton.addEventListener('click', function() {
+            generateButton.disabled = true;
+            statusDiv.style.display = 'block';
+
+            fetch('{% url "blog:generate-audio" blogpost.pk %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Failed to generate audio: ' + data.error);
+                        generateButton.disabled = false;
+                        statusDiv.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating audio');
+                    generateButton.disabled = false;
+                    statusDiv.style.display = 'none';
+                });
+        });
+    }
+
+    // Reaction functionality
+    {% if user.is_authenticated %}
+    const likeButton = document.getElementById('likeButton');
+    const dislikeButton = document.getElementById('dislikeButton');
+    const likeCount = document.getElementById('likeCount');
+    const dislikeCount = document.getElementById('dislikeCount');
+
+    function updateReactionCounts(data) {
+        likeCount.textContent = data.likes;
+        dislikeCount.textContent = data.dislikes;
+        
+        // Update button styles
+        likeButton.classList.remove('btn-primary', 'btn-outline-primary');
+        dislikeButton.classList.remove('btn-danger', 'btn-outline-danger');
+        
+        if (data.reaction_type === 'like') {
+            likeButton.classList.add('btn-primary');
+            dislikeButton.classList.add('btn-outline-danger');
+        } else if (data.reaction_type === 'dislike') {
+            likeButton.classList.add('btn-outline-primary');
+            dislikeButton.classList.add('btn-danger');
+        } else {
+            likeButton.classList.add('btn-outline-primary');
+            dislikeButton.classList.add('btn-outline-danger');
+        }
+    }
+
+    function handleReaction(reactionType) {
+        fetch('{% url "blog:react-to-post" blogpost.pk %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `reaction_type=${reactionType}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateReactionCounts(data);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing your reaction');
+        });
+    }
+
+    likeButton.addEventListener('click', () => handleReaction('like'));
+    dislikeButton.addEventListener('click', () => handleReaction('dislike'));
+
+    // Initialize reaction counts
+    fetch('{% url "blog:react-to-post" blogpost.pk %}', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateReactionCounts(data);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+    {% endif %}
+});
+</script>
+{% endblock %}
+{% endblock %} 

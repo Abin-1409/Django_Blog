@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Comment{% else %}Add Comment{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{% if is_edit %}Edit Comment{% else %}Add a Comment{% endif %}</h2>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="comment" class="form-control" rows="5" required>{% if comment %}{{ comment.text }}{% endif %}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            {% if is_edit %}Update Comment{% else %}Submit Comment{% endif %}
+                        </button>
+                        <a href="{{ blog.get_absolute_url }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

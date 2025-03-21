@@ -1,0 +1,154 @@
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Navigation Sidebar */
+.sidebar {
+    background-color: #343a40;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+}
+
+.sidebar-nav {
+    margin-top: 1rem;
+}
+
+.sidebar-nav li {
+    margin-bottom: 1rem;
+}
+
+.sidebar-nav a {
+    color: #fff;
+    transition: color 0.3s ease;
+}
+
+.sidebar-nav a:hover {
+    color: #17a2b8;
+    text-decoration: none;
+}
+
+/* Content Area */
+.content-wrapper {
+    padding: 2rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-title {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.card-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.card-title a:hover {
+    color: #17a2b8;
+}
+
+/* Blog Post */
+.blog-post {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.blog-meta {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
+
+.blog-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+/* Comments Section */
+.comments {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.comment-form {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-primary:hover {
+    background-color: #138496;
+    border-color: #138496;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+.pagination a {
+    color: #17a2b8;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+    background-color: #17a2b8;
+    color: #fff;
+    border-radius: 0.25rem;
+}
+
+/* Author Profile */
+.blogger-profile {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bio {
+    font-style: italic;
+    color: #6c757d;
+}
+
+/* Alerts and Messages */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Login Form */
+.login-form {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+} 
